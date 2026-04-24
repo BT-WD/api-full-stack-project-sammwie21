@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Search Dogs</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <header>
     <h1>Search Dog Breeds</h1>
@@ -20,13 +21,101 @@
       <h2>Search for a Breed</h2>
       <input type="text" id="search-input" placeholder="Enter breed name...">
       <button id="search-btn">Search</button>
+      <button id="random-btn">Random Breed</button>
     </section>
 
     <section>
       <h3>Results</h3>
-      <!-- Placeholder for search results -->
       <div id="data-container"></div>
     </section>
   </main>
+
+  <script>
+    async function searchBreed() {
+      const input = document.getElementById("search-input").value.toLowerCase();
+      const container = document.getElementById("data-container");
+
+      container.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch(`https://dog.ceo/api/breed/${input}/images`);
+        const data = await res.json();
+
+        if (data.status !== "success") {
+          container.innerHTML = "<p>Breed not found 🐕</p>";
+          return;
+        }
+
+        container.innerHTML = "";
+
+        data.message.slice(0, 6).forEach(imgUrl => {
+          const card = document.createElement("div");
+          card.style.display = "inline-block";
+          card.style.margin = "10px";
+          card.style.textAlign = "center";
+
+          const img = document.createElement("img");
+          img.src = imgUrl;
+          img.alt = input;
+          img.style.width = "200px";
+          img.style.display = "block";
+
+          const label = document.createElement("p");
+          label.textContent = input.replace("/", " ");
+          label.style.marginTop = "5px";
+          label.style.fontWeight = "bold";
+
+          const btn = document.createElement("button");
+          btn.textContent = "❤️ Favorite";
+          btn.style.marginTop = "5px";
+          btn.onclick = () => saveFavorite(imgUrl);
+
+          card.appendChild(img);
+          card.appendChild(label);
+          card.appendChild(btn);
+
+          container.appendChild(card);
+        });
+
+      } catch (error) {
+        container.innerHTML = "<p>Error fetching data</p>";
+      }
+    }
+
+    function saveFavorite(imgUrl) {
+      let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+      if (!favorites.includes(imgUrl)) {
+        favorites.push(imgUrl);
+        localStorage.setItem("favorites", JSON.stringify(favorites));
+        alert("Added to favorites ❤️");
+      } else {
+        alert("Already in favorites!");
+      }
+    }
+
+    const breeds = [
+      "husky",
+      "labrador",
+      "pug",
+      "bulldog",
+      "beagle",
+      "chihuahua",
+      "retriever/golden",
+      "poodle",
+      "boxer",
+      "dalmatian"
+    ];
+
+    function randomBreed() {
+      const random = breeds[Math.floor(Math.random() * breeds.length)];
+      document.getElementById("search-input").value = random;
+      searchBreed();
+    }
+
+    document.getElementById("search-btn").addEventListener("click", searchBreed);
+    document.getElementById("random-btn").addEventListener("click", randomBreed);
+  </script>
+
 </body>
 </html>
