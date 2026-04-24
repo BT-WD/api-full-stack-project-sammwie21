@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Dog Explorer</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="style.css">
 </head>
+
+
+
 <body>
   <header>
-    <h1>Dog Explorer</h1>
+    <h1>🐶 Dog Explorer</h1>
     <nav>
       <a href="index.html">Home</a>
       <a href="search.html">Search Dogs</a>
@@ -23,9 +26,34 @@
 
     <section>
       <h3>Featured Dogs</h3>
-      <!-- Placeholder for dog images -->
       <div id="data-container"></div>
     </section>
   </main>
+
+  <script>
+  async function loadDogs() {
+    const container = document.getElementById("data-container");
+
+    try {
+      const res = await fetch("https://dog.ceo/api/breeds/image/random/6");
+      const data = await res.json();
+
+      data.message.forEach(imgUrl => {
+        const img = document.createElement("img");
+        img.src = imgUrl;
+        img.alt = "Dog";
+        img.style.width = "200px";
+        img.style.margin = "10px";
+        container.appendChild(img);
+      });
+    } catch (error) {
+      container.innerHTML = "<p>Failed to load dogs 🐕</p>";
+    }
+  }
+
+  loadDogs();
+</script>
 </body>
+
+
 </html>
