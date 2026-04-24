@@ -2,44 +2,215 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Find Your Dog Match</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>Dog Match Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      text-align: center;
+      margin: 0;
+    }
+
+    header {
+      background: #333;
+      color: white;
+      padding: 1rem;
+    }
+
+    .quiz-container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .question {
+      font-size: 1.3rem;
+      margin-bottom: 20px;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 12px;
+      border: none;
+      border-radius: 6px;
+      background: #007BFF;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .options button:hover {
+      background: #0056b3;
+    }
+
+    .progress {
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+      color: gray;
+    }
+
+    img {
+      margin-top: 15px;
+      border-radius: 10px;
+    }
+  </style>
 </head>
+
 <body>
-  <header>
-    <h1>Find Your Ideal Dog</h1>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="search.html">Search Dogs</a>
-      <a href="match.html">Find Your Match</a>
-    </nav>
-  </header>
 
-  <main>
-    <section>
-      <h2>Answer a Few Questions</h2>
+<header>
+  <h1>🐶 Dog Match Quiz</h1>
+</header>
 
-      <label>Activity Level:</label>
-      <select id="activity">
-        <option>Low</option>
-        <option>Medium</option>
-        <option>High</option>
-      </select>
+<div class="quiz-container">
+  <div class="progress" id="progress"></div>
+  <div class="question" id="question"></div>
+  <div class="options" id="options"></div>
+  <div id="result"></div>
+</div>
 
-      <label>Living Space:</label>
-      <select id="space">
-        <option>Apartment</option>
-        <option>House</option>
-      </select>
+<script>
+  const questions = [
+    {
+      text: "What's your activity level?",
+      answers: ["Low", "Medium", "High"]
+    },
+    {
+      text: "Where do you live?",
+      answers: ["Apartment", "House"]
+    },
+    {
+      text: "Preferred dog size?",
+      answers: ["Small", "Medium", "Large"]
+    },
+    {
+      text: "Grooming effort?",
+      answers: ["Low", "Medium", "High"]
+    },
+    {
+      text: "Good with kids?",
+      answers: ["Yes", "No"]
+    }
+  ];
 
-      <button id="match-btn">Find Match</button>
-    </section>
+  let current = 0;
+  let responses = [];
 
-    <section>
-      <h3>Your Match</h3>
-      <!-- Placeholder for match result -->
-      <div id="data-container"></div>
-    </section>
-  </main>
+  function showQuestion() {
+    const q = questions[current];
+    document.getElementById("question").textContent = q.text;
+    document.getElementById("progress").textContent = 
+      `Question ${current + 1} of ${questions.length}`;
+
+    const optionsDiv = document.getElementById("options");
+    optionsDiv.innerHTML = "";
+
+    q.answers.forEach(answer => {
+      const btn = document.createElement("button");
+      btn.textContent = answer;
+      btn.onclick = () => selectAnswer(answer);
+      optionsDiv.appendChild(btn);
+    });
+  }
+
+  function selectAnswer(answer) {
+    responses.push(answer);
+    current++;
+
+    if (current < questions.length) {
+      showQuestion();
+    } else {
+      showResult();
+    }
+  }
+
+  function getMatch() {
+    const [activity, space, size, grooming, kids] = responses;
+
+    let scores = {
+      "husky": 0,
+      "retriever/golden": 0,
+      "pug": 0,
+      "bulldog": 0,
+      "chihuahua": 0
+    };
+
+    if (activity === "High") scores["husky"] += 2;
+    if (activity === "Medium") scores["retriever/golden"] += 2;
+    if (activity === "Low") scores["bulldog"] += 2;
+
+    if (space === "Apartment") {
+      scores["pug"] += 2;
+      scores["chihuahua"] += 2;
+    } else {
+      scores["husky"] += 1;
+      scores["retriever/golden"] += 1;
+    }
+
+    if (size === "Small") scores["chihuahua"] += 2;
+    if (size === "Medium") scores["pug"] += 1;
+    if (size === "Large") scores["husky"] += 1;
+
+    if (grooming === "Low") scores["bulldog"] += 2;
+    if (grooming === "High") scores["husky"] += 1;
+
+    if (kids === "Yes") scores["retriever/golden"] += 2;
+    else scores["chihuahua"] += 1;
+
+    return Object.keys(scores).reduce((a, b) =>
+      scores[a] > scores[b] ? a : b
+    );
+  }
+
+  async function showResult() {
+  const breed = getMatch();
+
+  document.getElementById("question").textContent = "Your perfect dog is...";
+  document.getElementById("options").innerHTML = "";
+  document.getElementById("progress").textContent = "";
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = "Loading... 🐶";
+
+  try {
+    const res = await fetch(`https://dog.ceo/api/breed/${breed}/images/random`);
+    const data = await res.json();
+
+resultDiv.innerHTML = `
+  <h2>${breed.replace("/", " ")}</h2>
+  <img src="${data.message}" width="250">
+  <br><br>
+
+  <button onclick="restartQuiz()">🔄 Try Again</button>
+  <button onclick="goHome()">🏠 Home</button>
+`;
+  } catch {
+    resultDiv.innerHTML = "<p>Error loading result</p>";
+  }
+}
+
+  showQuestion();
+
+  function restartQuiz() {
+  current = 0;
+  responses = [];
+
+  document.getElementById("result").innerHTML = "";
+
+  showQuestion();
+}
+
+function goHome() {
+  window.location.href = "index.html";
+}
+</script>
+
+
+
 </body>
 </html>
