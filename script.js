@@ -16,7 +16,7 @@ async function fetchDogByBreed(breed) {
 
     const data = await response.json();
 
-    console.log("API response:", data); // ✅ required for assignment
+    console.log("API response:", data); // 
 
     if (data.status !== "success") {
       throw new Error("Invalid breed");
