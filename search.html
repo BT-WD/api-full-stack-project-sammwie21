@@ -4,12 +4,27 @@
   <meta charset="UTF-8">
   <title>Search Dogs</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    img {
+      border-radius: 10px;
+    }
+
+    button {
+      cursor: pointer;
+      margin: 5px;
+    }
+  </style>
 </head>
 
 <body>
   <header>
     <h1>Search Dog Breeds</h1>
+
     <nav>
+      <a href="favorites.html">
+        <button>❤️ View Favorites</button>
+      </a>
       <a href="index.html">Home</a>
       <a href="search.html">Search Dogs</a>
       <a href="match.html">Find Your Match</a>
@@ -31,6 +46,30 @@
   </main>
 
   <script>
+    let breeds = [];
+
+    async function loadBreeds() {
+      try {
+        const res = await fetch("https://dog.ceo/api/breeds/list/all");
+        const data = await res.json();
+
+        const breedData = data.message;
+
+        breeds = Object.keys(breedData);
+
+        Object.entries(breedData).forEach(([breed, subBreeds]) => {
+          subBreeds.forEach(sub => {
+            breeds.push(`${breed}/${sub}`);
+          });
+        });
+
+      } catch (err) {
+        console.error("Failed to load breeds", err);
+      }
+    }
+
+    loadBreeds();
+
     async function searchBreed() {
       const input = document.getElementById("search-input").value.toLowerCase();
       const container = document.getElementById("data-container");
@@ -56,18 +95,14 @@
 
           const img = document.createElement("img");
           img.src = imgUrl;
-          img.alt = input;
           img.style.width = "200px";
-          img.style.display = "block";
 
           const label = document.createElement("p");
           label.textContent = input.replace("/", " ");
-          label.style.marginTop = "5px";
           label.style.fontWeight = "bold";
 
           const btn = document.createElement("button");
           btn.textContent = "❤️ Favorite";
-          btn.style.marginTop = "5px";
           btn.onclick = () => saveFavorite(imgUrl);
 
           card.appendChild(img);
@@ -88,26 +123,12 @@
       if (!favorites.includes(imgUrl)) {
         favorites.push(imgUrl);
         localStorage.setItem("favorites", JSON.stringify(favorites));
-        alert("Added to favorites ❤️");
-      } else {
-        alert("Already in favorites!");
       }
     }
 
-    const breeds = [
-      "husky",
-      "labrador",
-      "pug",
-      "bulldog",
-      "beagle",
-      "chihuahua",
-      "retriever/golden",
-      "poodle",
-      "boxer",
-      "dalmatian"
-    ];
-
     function randomBreed() {
+      if (breeds.length === 0) return;
+
       const random = breeds[Math.floor(Math.random() * breeds.length)];
       document.getElementById("search-input").value = random;
       searchBreed();
