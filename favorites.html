@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Favorite Dogs</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    img {
+      width: 200px;
+      border-radius: 10px;
+    }
+
+    .card {
+      display: inline-block;
+      margin: 10px;
+    }
+
+    button {
+      margin-top: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>❤️ My Favorite Dogs</h1>
+
+  <a href="search.html">
+    <button>⬅ Back to Search</button>
+  </a>
+
+  <div id="favorites-container"></div>
+
+  <script>
+    function loadFavorites() {
+      const container = document.getElementById("favorites-container");
+      let favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+      container.innerHTML = "";
+
+      if (favorites.length === 0) {
+        container.innerHTML = "<p>No favorites yet 🐶</p>";
+        return;
+      }
+
+      favorites.forEach(imgUrl => {
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const img = document.createElement("img");
+        img.src = imgUrl;
+
+        const btn = document.createElement("button");
+        btn.textContent = "🗑 Remove";
+
+        btn.onclick = () => {
+          favorites = favorites.filter(item => item !== imgUrl);
+          localStorage.setItem("favorites", JSON.stringify(favorites));
+          loadFavorites();
+        };
+
+        card.appendChild(img);
+        card.appendChild(btn);
+
+        container.appendChild(card);
+      });
+    }
+
+    window.addEventListener("load", loadFavorites);
+  </script>
+
+</body>
+</html>
